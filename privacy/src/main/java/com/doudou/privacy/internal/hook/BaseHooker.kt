@@ -10,13 +10,13 @@ import de.robv.android.xposed.XC_MethodHook
  * ClassName: [BaseHooker]
  * Description:
  */
-abstract class BaseHooker(private var category: String) : HookerDelegate {
+abstract class BaseHooker(private var category: String) : HookerDelegate, HookerCallback() {
     private val mUnhook = mutableListOf<XC_MethodHook.Unhook>()
 
     override fun startHook() {
         Constants.ALL_SENSITIVE_API[category]?.forEach {
             val targetClazz = it.parseClass()
-            val signature = it.parseSignature()
+            val signature = it.parseSignature(this)
             val methodName = signature[0] as String
             if (it.isConstructor) {
 //                DexposedBridge.hookMethod(targetClazz.getConstructor(*parameterTypes), HookerCallback()).also { unhook ->

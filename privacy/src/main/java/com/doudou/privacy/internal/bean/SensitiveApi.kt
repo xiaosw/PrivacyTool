@@ -2,6 +2,7 @@ package com.doudou.privacy.internal.bean
 
 import com.doudou.privacy.internal.biz.HookerCallback
 import com.doudou.privacy.internal.hook.SystemClassMapping
+import de.robv.android.xposed.XC_MethodHook
 import java.io.Serializable
 import java.lang.IllegalArgumentException
 import java.lang.RuntimeException
@@ -29,7 +30,7 @@ data class SensitiveApi(
         return clazz
     }
 
-    fun parseSignature(classLoader: ClassLoader = javaClass.classLoader) = arrayOfNulls<Any>(2).also {
+    fun parseSignature(callback: XC_MethodHook, classLoader: ClassLoader = javaClass.classLoader) = arrayOfNulls<Any>(2).also {
         val start = signature.indexOf("(")
         val end = signature.indexOf(")")
         val methodName = signature.substring(0, start)
@@ -51,7 +52,7 @@ data class SensitiveApi(
                 }
             }
         }
-        parameters[parameters.size - 1] = HookerCallback()
+        parameters[parameters.size - 1] = callback
         it[0] = methodName
         it[1] = parameters
     }

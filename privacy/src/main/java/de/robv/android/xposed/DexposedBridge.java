@@ -23,6 +23,7 @@ import android.app.AndroidAppHelper;
 import android.os.Build;
 import android.util.Log;
 
+import com.doudou.privacy.internal.biz.HookerCallback;
 import com.taobao.android.dexposed.utility.Logger;
 import com.taobao.android.dexposed.utility.Runtime;
 
@@ -247,8 +248,22 @@ public final class DexposedBridge {
 		if (!param.returnEarly) {
 			try {
 				ArtMethod method = Epic.getBackMethod(artmethod);
-				Object result = method.invoke(thisObject, args);
-				param.setResult(result);
+				Object callback = callbacksSnapshot[0];
+				HookerCallback.ReplaceResult replaceResult = null;
+				if (callback instanceof HookerCallback) {
+					replaceResult = ((HookerCallback) callback)
+							.replaceResult(method.getDeclaringClass(), thisObject, method.getName(), args);
+				}
+				if (null != replaceResult) {
+					final Throwable thr = replaceResult.getThr();
+					if (null != thr) {
+						param.setThrowable(thr);
+					} else {
+						param.setResult(replaceResult.getResult());
+					}
+				} else {
+					param.setResult(method.invoke(thisObject, args));
+				}
 			} catch (Exception e) {
 				// log(e); origin throw exception is normal.
 				param.setThrowable(e);
